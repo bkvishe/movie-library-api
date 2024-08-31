@@ -28,12 +28,15 @@ provider:
             - Fn::GetAtt: [MoviesTable, Arn]
   environment:
     MOVIES_TABLE: ${param:tableName}
+    X_API_KEY: ${env:X_API_KEY}
 
 functions:
   api:
     handler: src/app.handler
     events:
       - httpApi: "*"
+    environment:
+      X_API_KEY: ${env:X_API_KEY}
 
 resources:
   Resources:

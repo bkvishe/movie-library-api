@@ -9,6 +9,7 @@
     "dynamoose": "^4.0.1",
     "express": "^4.19.2",
     "joi": "^17.12.1",
-    "serverless-http": "^3.2.0"
+    "serverless-http": "^3.2.0",
+    "uuid": "^10.0.0"
   }
 }

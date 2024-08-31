@@ -7,7 +7,7 @@ const movieSchema = new dynamoose.Schema({
   details: String,
   genre: String,
   actors: String,
-  releaseDate: String,
+  releaseYear: String,
   director: String,
   rating: String,
   duration: String,

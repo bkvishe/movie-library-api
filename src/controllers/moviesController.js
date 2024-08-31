@@ -1,118 +1,83 @@
 import { movies } from "../../data/movies.js";
-import { createMovie } from "../services/moviesService.js"
+import movieService from "../services/moviesService.js"
 
-export const getAllMovies = async (req, res) => {
+export const getAllMovies = async (req, res, next) => {
 
-    const movie = {
-        movieId: "1",
-        name: "name",
-        details: "details",
-        genre: "genre",
-        actors: "actors",
-        releaseDate: "releaseDate",
-        director: "director",
-        rating: "rating",
-        duration: "duration",
-        language: "language",
-        posterUrl: "posterUrl",
-      }
-
-    const result = await createMovie(movie);
-
-    console.log({result});
-
-    return res.jsonResponse(201, {
-        status: "success",
-        message: "Data added successfully",
-        data: movie
-    });
-};
-
-export const addMovie = async (req, res) => {
-
-    const movie = {
-        movieId: "1",
-        name: "name",
-        details: "details",
-        genre: "genre",
-        actors: "actors",
-        releaseDate: "releaseDate",
-        director: "director",
-        rating: "rating",
-        duration: "duration",
-        language: "language",
-        posterUrl: "posterUrl",
-      }
-
-    const result = await createMovie(movie);
-
-    console.log({result});
-
-    return res.jsonResponse(201, {
-        status: "success",
-        message: "Data added successfully",
-        data: movie
-    });
-};
-
-export const getMovieById = (req, res) => {
-
-    const id = Number(req.params.id);
-    const movie = movies.find((m) => m._id === id);
-
-    if (!movie) {
-        return res.jsonResponse(404, {
-            status: "error",
-            message: "Data not found",
+    try {
+        const searchKeyword = req?.query?.keyword;
+        const movies = await movieService.getAllMovies(searchKeyword);
+        return res.jsonResponse(200, {
+            status: "success",
+            message: "Movies fetched successfully",
+            data: movies
         });
     }
-
-    return res.jsonResponse(200, {
-        status: "success",
-        message: "Data fetched successfully",
-        data: movie
-    });
+    catch (error) {
+        next(error);
+    }
 };
 
-export const updateMovie = (req, res) => {
+export const getMovieById = async (req, res, next) => {
 
-    const id = Number(req.params.id);
-    const index = movies.findIndex((m) => m._id === id);
+    try {
+        const id = req.params.id;
+        const movie = await movieService.getMovieById(id);
 
-    if (index < 0) {
-        return res.jsonResponse(404, {
-            status: "error",
-            message: "Data not found",
+        return res.jsonResponse(200, {
+            status: "success",
+            message: "Movie fetched successfully",
+            data: movie
         });
     }
-
-    movies[index] = { 
-        _id: id, 
-        ...req.body 
-    };
-
-    return res.jsonResponse(200, {
-        status: "success",
-        message: "Data updated successfully",
-        data: movies[index]
-    });
+    catch (error) {
+        next(error);
+    }
 };
 
-export const deleteMovie = (req, res) => {
-    const id = Number(req.params.id);
-    const index = movies.findIndex((m) => m._id === id);
+export const addMovie = async (req, res, next) => {
 
-    if (index < 0) {
-        return res.jsonResponse(404, {
-            status: "error",
-            message: "Data not found",
+    try {
+        const result = await movieService.addMovie(req.body);
+
+        return res.jsonResponse(201, {
+            status: "success",
+            message: "Movie added successfully",
+            data: result
         });
     }
+    catch (error) {
+        next(error);
+    }
+};
 
-    movies.splice(index, 1);
+export const updateMovie = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const result = await movieService.updateMovie(id, req.body);
 
-    return res.jsonResponse(200, {
-        status: "success",
-        message: "Data deleted successfully"
-    });
+        return res.jsonResponse(200, {
+            status: "success",
+            message: "Movie updated successfully",
+            data: result
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+
+export const deleteMovie = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+
+        await movieService.deleteMovie(id);
+
+        return res.jsonResponse(200, {
+            status: "success",
+            message: "Movie deleted successfully"
+        });
+    }
+    catch (error) {
+        next(error);
+    }
 };
