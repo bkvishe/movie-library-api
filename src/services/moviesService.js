@@ -9,7 +9,7 @@ const movieService = {
 
   getAllMovies: async (searchKeyword) => {
     if(searchKeyword){
-      return (await Movie.scan()
+      return await Movie.scan()
         .filter("name")
         .contains(searchKeyword)
         .or()
@@ -24,7 +24,7 @@ const movieService = {
         .or()
         .filter("actors")
         .contains(searchKeyword)
-        .exec()).toJSON();
+        .exec();
     }
     return await Movie.scan().exec();
   },

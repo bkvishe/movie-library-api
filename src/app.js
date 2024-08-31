@@ -12,4 +12,7 @@ app.use(responseToJson);
 app.use('/api/v1', apiRoutes);
 app.use(errorHandler);
 
+// Export the app for testing
+export const server = app;
+
 export const handler = serverless(app);

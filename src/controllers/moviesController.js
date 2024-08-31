@@ -1,4 +1,3 @@
-import { movies } from "../../data/movies.js";
 import movieService from "../services/moviesService.js"
 
 export const getAllMovies = async (req, res, next) => {
