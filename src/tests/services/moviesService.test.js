@@ -8,130 +8,154 @@ jest.mock('../../models/movieModel.js');
 
 describe('Movie Service', () => {
 
-  beforeEach(() => {
-    jest.clearAllMocks(); // Clear any previous mock calls
-  });
-
-  describe('getAllMovies', () => {
-    it('should return all movies when no search keyword is provided', async () => {
-      const mockMovies = [{ name: 'Inception' }, { name: 'Interstellar' }];
-      Movie.scan.mockReturnValueOnce({
-        exec: jest.fn().mockResolvedValue(mockMovies),
-      });
-
-      const result = await movieService.getAllMovies();
-      expect(result).toEqual(mockMovies);
+    beforeEach(() => {
+        jest.clearAllMocks(); // Clear any previous mock calls
     });
 
-    it('should filter movies based on search keyword', async () => {
-      const mockMovies = [{ name: 'Inception' }];
-      Movie.scan.mockReturnValueOnce({
-        filter: jest.fn().mockReturnThis(),
-        contains: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockMovies),
-        toJSON: jest.fn().mockReturnValue(mockMovies),
-      });
+    describe('getAllMovies', () => {
+        it('should return all movies when no search keyword is provided', async () => {
+            const mockMovies = [{ name: 'Inception' }, { name: 'Interstellar' }];
+            Movie.scan.mockReturnValueOnce({
+                exec: jest.fn().mockResolvedValue(mockMovies),
+            });
 
-      const result = await movieService.getAllMovies('Inception');
-      expect(result).toEqual(mockMovies);
-    });
-  });
+            const result = await movieService.getAllMovies();
+            expect(result).toEqual(mockMovies);
+        });
 
-  describe('getMovieById', () => {
-    it('should return a movie by ID', async () => {
-      const mockMovie = { movieId: '1', name: 'Inception' };
-      Movie.get.mockResolvedValue(mockMovie);
+        it('should filter movies based on search keyword', async () => {
+            const mockMovies = [{ name: 'Inception' }];
+            Movie.scan.mockReturnValueOnce({
+                filter: jest.fn().mockReturnThis(),
+                contains: jest.fn().mockReturnThis(),
+                or: jest.fn().mockReturnThis(),
+                exec: jest.fn().mockResolvedValue(mockMovies),
+                toJSON: jest.fn().mockReturnValue(mockMovies),
+            });
 
-      const result = await movieService.getMovieById('1');
-      expect(result).toEqual(mockMovie);
-    });
-
-    it('should throw RecordNotFoundException if movie does not exist', async () => {
-      Movie.get.mockResolvedValue(null);
-
-      await expect(movieService.getMovieById('1')).rejects.toThrow(RecordNotFoundException);
-    });
-  });
-
-  describe('addMovie', () => {
-    it('should add a new movie successfully', async () => {
-      const movieData = { name: 'Inception' };
-      Movie.scan.mockReturnValueOnce({
-        eq: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue({ count: 0 })
-      });
-
-      Movie.prototype.save = jest.fn().mockResolvedValue(movieData);
-
-      const result = await movieService.addMovie(movieData);
-      expect(result).toEqual(movieData);
+            const result = await movieService.getAllMovies('Inception');
+            expect(result).toEqual(mockMovies);
+        });
     });
 
-    it('should throw DuplicateRecordException if movie already exists', async () => {
-      const movieData = { name: 'Inception' };
-      Movie.scan.mockReturnValueOnce({
-        eq: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue({ count: 1 })
-      });
+    describe('getMovieById', () => {
+        it('should return a movie by ID', async () => {
+            const mockMovie = { movieId: '1', name: 'Inception' };
+            Movie.get.mockResolvedValue(mockMovie);
 
-      await expect(movieService.addMovie(movieData)).rejects.toThrow(DuplicateRecordException);
-    });
-  });
+            const result = await movieService.getMovieById('1');
+            expect(result).toEqual(mockMovie);
+        });
 
-  describe('updateMovie', () => {
-    it('should update a movie successfully', async () => {
-      const movieId = '1';
-      const updateData = { name: 'Inception Updated' };
-      const existingMovie = { movieId: '1', name: 'Inception' };
+        it('should throw RecordNotFoundException if movie does not exist', async () => {
+            Movie.get.mockResolvedValue(null);
 
-      Movie.get.mockResolvedValue(existingMovie);
-      Movie.scan.mockReturnValueOnce({ toJSON: jest.fn().mockReturnValue([]) });
-      Movie.update.mockResolvedValue(updateData);
-
-      const result = await movieService.updateMovie(movieId, updateData);
-      expect(result).toEqual(updateData);
+            await expect(movieService.getMovieById('1')).rejects.toThrow(RecordNotFoundException);
+        });
     });
 
-    it('should throw DuplicateRecordException if another movie with the same name exists', async () => {
-      const movieId = '1';
-      const updateData = { name: 'Interstellar' };
-      const existingMovie = { movieId: '1', name: 'Inception' };
+    describe('addMovie', () => {
+        it('should add a new movie successfully', async () => {
+            const movieData = { name: 'Inception' };
 
-      Movie.get.mockResolvedValue(existingMovie);
-      Movie.scan.mockReturnValueOnce({ toJSON: jest.fn().mockReturnValue([updateData]) });
+            // Mocking the scan method to simulate no existing movie
+            Movie.scan.mockReturnValueOnce({
+                eq: jest.fn().mockReturnThis(),
+                exec: jest.fn().mockResolvedValue({ count: 0 }),
+            });
 
-      await expect(movieService.updateMovie(movieId, updateData)).rejects.toThrow(DuplicateRecordException);
+            // Mocking the save method to simulate a successful save operation
+            Movie.prototype.save = jest.fn().mockResolvedValue({
+                movieId: 'some-uuid',
+                ...movieData,
+            });
+
+            const result = await movieService.addMovie(movieData);
+
+            // Expect the result to equal the object returned by save
+            expect(result).toEqual({
+                movieId: 'some-uuid',
+                name: 'Inception',
+            });
+        });
+
+        it('should throw DuplicateRecordException if movie already exists', async () => {
+            const movieData = { name: 'Inception' };
+            Movie.scan.mockReturnValueOnce({
+                eq: jest.fn().mockReturnThis(),
+                exec: jest.fn().mockResolvedValue({ count: 1 })
+            });
+
+            await expect(movieService.addMovie(movieData)).rejects.toThrow(DuplicateRecordException);
+        });
     });
 
-    it('should throw RecordNotFoundException if movie does not exist', async () => {
-      const movieId = '1';
-      const updateData = { name: 'Inception Updated' };
+    describe('updateMovie', () => {
+        it('should update a movie successfully', async () => {
+            const movieId = '1';
+            const updateData = { name: 'Inception Updated' };
+            const existingMovie = { movieId: '1', name: 'Inception' };
 
-      Movie.get.mockResolvedValue(null);
+            Movie.get.mockResolvedValue(existingMovie);
+            Movie.scan.mockReturnValueOnce({
+                filter: jest.fn().mockReturnThis(),
+                eq: jest.fn().mockReturnThis(),
+                and: jest.fn().mockReturnThis(),
+                not: jest.fn().mockReturnThis(),
+                exec: jest.fn().mockResolvedValue([])
+            });
+            Movie.update.mockResolvedValue(updateData);
 
-      await expect(movieService.updateMovie(movieId, updateData)).rejects.toThrow(RecordNotFoundException);
+            const result = await movieService.updateMovie(movieId, updateData);
+            expect(result).toEqual(updateData);
+        });
+
+
+        it('should throw DuplicateRecordException if another movie with the same name exists', async () => {
+            const movieId = '1';
+            const updateData = { name: 'Inception' };
+            const existingMovie = { movieId: '1', name: 'Inception' };
+      
+            Movie.get.mockResolvedValue(existingMovie);
+            Movie.scan.mockReturnValueOnce({
+              filter: jest.fn().mockReturnThis(),
+              eq: jest.fn().mockReturnThis(),
+              and: jest.fn().mockReturnThis(),
+              not: jest.fn().mockReturnThis(),
+              exec: jest.fn().mockResolvedValue([updateData])
+            });
+      
+            await expect(movieService.updateMovie(movieId, updateData)).rejects.toThrow(DuplicateRecordException);
+          });
+
+        it('should throw RecordNotFoundException if movie does not exist', async () => {
+            const movieId = '1';
+            const updateData = { name: 'Inception Updated' };
+
+            Movie.get.mockResolvedValue(null);
+
+            await expect(movieService.updateMovie(movieId, updateData)).rejects.toThrow(RecordNotFoundException);
+        });
     });
-  });
 
-  describe('deleteMovie', () => {
-    it('should delete a movie successfully', async () => {
-      const movieId = '1';
-      const mockMovie = { movieId: '1', name: 'Inception' };
+    describe('deleteMovie', () => {
+        it('should delete a movie successfully', async () => {
+            const movieId = '1';
+            const mockMovie = { movieId: '1', name: 'Inception' };
 
-      Movie.get.mockResolvedValue(mockMovie);
-      Movie.delete.mockResolvedValue({});
+            Movie.get.mockResolvedValue(mockMovie);
+            Movie.delete.mockResolvedValue({});
 
-      await movieService.deleteMovie(movieId);
-      expect(Movie.delete).toHaveBeenCalledWith(movieId);
+            await movieService.deleteMovie(movieId);
+            expect(Movie.delete).toHaveBeenCalledWith(movieId);
+        });
+
+        it('should throw RecordNotFoundException if movie does not exist', async () => {
+            const movieId = '1';
+
+            Movie.get.mockResolvedValue(null);
+
+            await expect(movieService.deleteMovie(movieId)).rejects.toThrow(RecordNotFoundException);
+        });
     });
-
-    it('should throw RecordNotFoundException if movie does not exist', async () => {
-      const movieId = '1';
-
-      Movie.get.mockResolvedValue(null);
-
-      await expect(movieService.deleteMovie(movieId)).rejects.toThrow(RecordNotFoundException);
-    });
-  });
 });

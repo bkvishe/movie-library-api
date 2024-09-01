@@ -29,6 +29,10 @@ provider:
   environment:
     MOVIES_TABLE: ${param:tableName}
     X_API_KEY: ${env:X_API_KEY}
+  httpApi:
+    cors:
+      allowedOrigins:
+        - http://localhost:4200
 
 functions:
   api:

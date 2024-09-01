@@ -48,7 +48,7 @@ const movieService = {
       movieId: uuidv4(),
       ...movieData
     });
-
+    console.log({newMovie});
     await newMovie.save();
     return newMovie;
   },
@@ -58,16 +58,16 @@ const movieService = {
     if(!movie){
       throw new RecordNotFoundException("The movie not found");
     }    
-    const existingMovies = (await Movie.scan()
+    const existingMovies = await Movie.scan()
     .filter("name")
     .eq(updateData.name)
     .and()
     .filter("movieId")
     .not()
     .eq(movieId)
-    .exec()).toJSON();
+    .exec();
     
-    if(existingMovies.length){
+    if(existingMovies.count){
       throw new DuplicateRecordException("A movie with the same name already exists.");
     }
     const updatedMovie = await Movie.update({ movieId }, updateData);
