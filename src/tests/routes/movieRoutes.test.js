@@ -57,6 +57,7 @@ describe('Movies Controller', () => {
         "posterUrl": "posterUrl",
         "language": "English"
     };
+
     it('should add a new movie successfully', async () => {
       movieService.addMovie.mockResolvedValue(newMovie);
 
@@ -68,6 +69,18 @@ describe('Movies Controller', () => {
       expect(res.status).toBe(201);
       expect(res.body.status).toBe('success');
     });
+
+    it('should return validation error', async () => {
+        movieService.addMovie.mockResolvedValue(newMovie);
+  
+        const res = await request(server)
+          .post('/api/v1/movies')
+          .send({})
+          .set('x-api-key', '123');
+  
+        expect(res.status).toBe(400);
+        expect(res.body.status).toBe('error');
+      });
 
     it('should return 400 if movie already exists', async () => {
       movieService.addMovie.mockRejectedValue(new DuplicateRecordException('A movie with the same name already exists.'));
