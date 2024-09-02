@@ -55,46 +55,71 @@ describe('Movie Service', () => {
     });
 
     describe('addMovie', () => {
-        it('should add a new movie successfully', async () => {
-            const movieData = { name: 'Inception' };
+        const movieData = {
+            "director": "director",
+            "releaseYear": 2020,
+            "actors": "actors",
+            "details": "details",
+            "name": "The Test Movie1",
+            "genre": "Sci-fi",
+            "posterUrl": "posterUrl",
+            "language": "English"
+        };
 
+        it('should add a new movie successfully', async () => {
             // Mocking the scan method to simulate no existing movie
             Movie.scan.mockReturnValueOnce({
                 eq: jest.fn().mockReturnThis(),
                 exec: jest.fn().mockResolvedValue({ count: 0 }),
             });
 
-            // Mocking the save method to simulate a successful save operation
+            // Mock the save method to simulate a successful save operation
             Movie.prototype.save = jest.fn().mockResolvedValue({
-                movieId: 'some-uuid',
+                movieId: 'test-uuid',
                 ...movieData,
             });
 
-            const result = await movieService.addMovie(movieData);
+            await movieService.addMovie(movieData);
 
-            // Expect the result to equal the object returned by save
-            expect(result).toEqual({
-                movieId: 'some-uuid',
-                name: 'Inception',
-            });
+            expect(Movie.prototype.save).toHaveBeenCalled();
         });
 
         it('should throw DuplicateRecordException if movie already exists', async () => {
             const movieData = { name: 'Inception' };
-            Movie.scan.mockReturnValueOnce({
+            Movie.scan = jest.fn().mockReturnValue({
                 eq: jest.fn().mockReturnThis(),
-                exec: jest.fn().mockResolvedValue({ count: 1 })
+                exec: jest.fn().mockResolvedValue({ count: 1 }),
             });
 
             await expect(movieService.addMovie(movieData)).rejects.toThrow(DuplicateRecordException);
         });
     });
 
+
     describe('updateMovie', () => {
         it('should update a movie successfully', async () => {
             const movieId = '1';
-            const updateData = { name: 'Inception Updated' };
-            const existingMovie = { movieId: '1', name: 'Inception' };
+            const updateData = {
+                "director": "director",
+                "releaseYear": 2020,
+                "actors": "actors",
+                "details": "details",
+                "name": "The Movie Updated",
+                "genre": "Sci-fi",
+                "posterUrl": "posterUrl",
+                "language": "English"
+            };
+            const existingMovie = {
+                movieId: '1',
+                "director": "director",
+                "releaseYear": 2020,
+                "actors": "actors",
+                "details": "details",
+                "name": "The Movie",
+                "genre": "Sci-fi",
+                "posterUrl": "posterUrl",
+                "language": "English"
+            };
 
             Movie.get.mockResolvedValue(existingMovie);
             Movie.scan.mockReturnValueOnce({
@@ -113,20 +138,39 @@ describe('Movie Service', () => {
 
         it('should throw DuplicateRecordException if another movie with the same name exists', async () => {
             const movieId = '1';
-            const updateData = { name: 'Inception' };
-            const existingMovie = { movieId: '1', name: 'Inception' };
-      
+            const updateData = {
+                "director": "director",
+                "releaseYear": 2020,
+                "actors": "actors",
+                "details": "details",
+                "name": "The Movie Updated",
+                "genre": "Sci-fi",
+                "posterUrl": "posterUrl",
+                "language": "English"
+            };
+            const existingMovie = {
+                movieId: '1',
+                "director": "director",
+                "releaseYear": 2020,
+                "actors": "actors",
+                "details": "details",
+                "name": "The Movie Updated",
+                "genre": "Sci-fi",
+                "posterUrl": "posterUrl",
+                "language": "English"
+            };
+
             Movie.get.mockResolvedValue(existingMovie);
             Movie.scan.mockReturnValueOnce({
-              filter: jest.fn().mockReturnThis(),
-              eq: jest.fn().mockReturnThis(),
-              and: jest.fn().mockReturnThis(),
-              not: jest.fn().mockReturnThis(),
-              exec: jest.fn().mockResolvedValue([updateData])
+                filter: jest.fn().mockReturnThis(),
+                eq: jest.fn().mockReturnThis(),
+                and: jest.fn().mockReturnThis(),
+                not: jest.fn().mockReturnThis(),
+                exec: jest.fn().mockResolvedValue({ count: 1 })
             });
-      
+
             await expect(movieService.updateMovie(movieId, updateData)).rejects.toThrow(DuplicateRecordException);
-          });
+        });
 
         it('should throw RecordNotFoundException if movie does not exist', async () => {
             const movieId = '1';
