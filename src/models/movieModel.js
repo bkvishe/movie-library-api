@@ -4,14 +4,15 @@ import dynamoose from "dynamoose";
 const movieSchema = new dynamoose.Schema({
   movieId: String,
   name: String,
+  nameSearch: String,
   details: String,
   genre: String,
+  genreSearch: String,
   actors: String,
-  releaseYear: String,
+  releaseYear: Number,
   director: String,
-  rating: String,
-  duration: String,
   language: String,
+  languageSearch: String,
   posterUrl: String,
 });
 

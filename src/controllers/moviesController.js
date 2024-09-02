@@ -3,7 +3,7 @@ import movieService from "../services/moviesService.js"
 export const getAllMovies = async (req, res, next) => {
 
     try {
-        const searchKeyword = req?.query?.keyword;
+        const searchKeyword = req?.query?.keyword?.toLowerCase();
         const movies = await movieService.getAllMovies(searchKeyword);
         return res.jsonResponse(200, {
             status: "success",

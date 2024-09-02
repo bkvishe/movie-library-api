@@ -10,19 +10,13 @@ const movieService = {
   getAllMovies: async (searchKeyword) => {
     if(searchKeyword){
       return await Movie.scan()
-        .filter("name")
+        .filter("nameSearch")
         .contains(searchKeyword)
         .or()
-        .filter("director")
+        .filter("genreSearch")
         .contains(searchKeyword)
         .or()
-        .filter("genre")
-        .contains(searchKeyword)
-        .or()
-        .filter("language")
-        .contains(searchKeyword)
-        .or()
-        .filter("actors")
+        .filter("languageSearch")
         .contains(searchKeyword)
         .exec();
     }
@@ -44,13 +38,16 @@ const movieService = {
       throw new DuplicateRecordException("A movie with the same name already exists.");
     }
 
-    const newMovie = new Movie({
+    const moviePayload = new Movie({
+      ...movieData,
       movieId: uuidv4(),
-      ...movieData
+      nameSearch: movieData.name.toLowerCase(),
+      genreSearch: movieData.genre.toLowerCase(),
+      languageSearch: movieData.language.toLowerCase(),
     });
-    console.log({newMovie});
-    await newMovie.save();
-    return newMovie;
+
+    await moviePayload.save();
+    return moviePayload;
   },
 
   updateMovie: async (movieId, updateData) => {
@@ -70,7 +67,14 @@ const movieService = {
     if(existingMovies.count){
       throw new DuplicateRecordException("A movie with the same name already exists.");
     }
-    const updatedMovie = await Movie.update({ movieId }, updateData);
+
+    const moviePayload = {
+      ...updateData,
+      nameSearch: updateData.name.toLowerCase(),
+      genreSearch: updateData.genre.toLowerCase(),
+      languageSearch: updateData.language.toLowerCase(),
+    }
+    const updatedMovie = await Movie.update({ movieId }, moviePayload);
     return updatedMovie;
   },
 

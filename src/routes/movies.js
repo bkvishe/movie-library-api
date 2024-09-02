@@ -7,9 +7,9 @@ import movieSchema from '../validators/movieValidator.js';
 const router = express.Router();
 
 router.get('/', authenticateXApiKey, getAllMovies);
-router.post('/', authenticateXApiKey, addMovie);
+router.post('/', authenticateXApiKey, validate(movieSchema), addMovie);
 router.get('/:id', authenticateXApiKey, getMovieById);
-router.put('/:id', authenticateXApiKey, updateMovie);
+router.put('/:id', authenticateXApiKey, validate(movieSchema), updateMovie);
 router.delete('/:id', authenticateXApiKey, deleteMovie);
 
 export default router;
